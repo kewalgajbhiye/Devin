@@ -1,0 +1,8 @@
+tkinter
+sqlite3
+reportlab>=3.6.0
+openpyxl>=3.1.0
+dbf==0.99.3
+Pillow==10.0.0
+reportlab==4.0.4
+pyinstaller==5.13.0
