@@ -236,6 +236,11 @@ class DashboardCards:
                   text="Print All Reports", 
                   command=self.main_app.open_print_all_reports_form,
                   style='Success.TButton').pack(pady=2, fill='x')
+        
+        ttk.Button(btn_frame, 
+                  text="Trial Balance", 
+                  command=self.main_app.show_trial_balance,
+                  style='Success.TButton').pack(pady=2, fill='x')
     
     def create_settings_card(self, parent):
         """Create settings card"""

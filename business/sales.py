@@ -24,16 +24,16 @@ class SalesManager:
                 return False, "At least one item is required"
             
             for item in items:
-                if not item.get('item_code'):
+                if not item.get('it_cd'):
                     return False, "Item code is required for all items"
-                if not item.get('quantity') or float(item['quantity']) <= 0:
+                if not item.get('qty') or float(item['qty']) <= 0:
                     return False, "Quantity must be greater than 0"
                 if not item.get('rate') or float(item['rate']) <= 0:
                     return False, "Rate must be greater than 0"
                     
-                item['amount'] = float(item['quantity']) * float(item['rate'])
+                item['sal_amt'] = float(item['qty']) * float(item['rate'])
             
-            return self.queries.save_sale(bill_data, items)
+            return self.queries.save_sale(bill_data)
             
         except Exception as e:
             return False, f"Error creating sales entry: {e}"
@@ -55,8 +55,8 @@ class SalesManager:
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         bill_data['bill_no'], bill_data['bill_dt'], bill_data['party_cd'],
-                        bill_data.get('party_nm', ''), item['item_code'], item['item_name'],
-                        item['quantity'], item['rate'], item['amount'],
+                        bill_data.get('party_nm', ''), item['it_cd'], item['it_nm'],
+                        item['qty'], item['rate'], item['sal_amt'],
                         bill_data.get('transport', ''), bill_data.get('vehicle_no', ''),
                         bill_data.get('remarks', ''), bill_data.get('exp1', 0),
                         bill_data.get('exp2', 0), bill_data.get('exp3', 0),

@@ -251,10 +251,34 @@ class ModernBusinessApp:
         """Show trial balance"""
         try:
             self.update_status("Opening trial balance...")
+            from gui.forms.trial_balance_form import TrialBalanceForm
             TrialBalanceForm(self.root, self.db_manager, self.settings, self)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open trial balance: {e}")
             self.update_status("Error opening trial balance")
+    
+    def import_trial_balance_csv(self):
+        """Import trial balance from CSV"""
+        try:
+            from tkinter import filedialog
+            file_path = filedialog.askopenfilename(
+                title="Select TBAL.csv file",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+            )
+            
+            if file_path:
+                from business.trial_balance import TrialBalanceManager
+                trial_balance_manager = TrialBalanceManager(self.db_manager)
+                imported_count = trial_balance_manager.import_trial_balance_data(file_path)
+                
+                if imported_count > 0:
+                    messagebox.showinfo("Success", f"Imported {imported_count} trial balance records")
+                    self.update_status(f"Imported {imported_count} trial balance records")
+                else:
+                    messagebox.showerror("Error", "No records were imported")
+                    
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to import trial balance: {e}")
     
     def show_purchase_reports(self):
         """Show purchase reports"""

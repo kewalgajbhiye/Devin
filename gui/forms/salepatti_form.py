@@ -30,7 +30,22 @@ class SalepattiForm:
         
     def setup_form(self):
         """Setup the SALEPATTI form"""
-        main_frame = ttk.Frame(self.window)
+        canvas = tk.Canvas(self.window, bg=self.settings.colors['background'])
+        scrollbar = ttk.Scrollbar(self.window, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        main_frame = ttk.Frame(scrollable_frame)
         main_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
         title_label = ttk.Label(main_frame, text="S A L E P A T T I   E N T R Y   M O D U L E", 

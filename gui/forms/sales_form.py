@@ -60,7 +60,9 @@ class SalesEntryForm:
         
         ttk.Label(header_frame, text="Party:").grid(row=0, column=4, sticky='w', pady=2, padx=(20, 0))
         self.party_var = tk.StringVar()
-        self.party_combo = ttk.Combobox(header_frame, textvariable=self.party_var, width=30)
+        from gui.components.searchable_combobox import SearchableCombobox
+        self.party_combo = SearchableCombobox.create_searchable_combobox(
+            header_frame, self.party_var, [], width=30)
         self.party_combo.grid(row=0, column=5, padx=5, pady=2)
         self.party_combo.bind('<KeyRelease>', self.on_party_search)
         
@@ -86,7 +88,9 @@ class SalesEntryForm:
         
         ttk.Label(entry_frame, text="Item:").grid(row=0, column=0, sticky='w', pady=2)
         self.item_var = tk.StringVar()
-        self.item_combo = ttk.Combobox(entry_frame, textvariable=self.item_var, width=25)
+        from gui.components.searchable_combobox import SearchableCombobox
+        self.item_combo = SearchableCombobox.create_searchable_combobox(
+            entry_frame, self.item_var, [], width=25)
         self.item_combo.grid(row=0, column=1, padx=5, pady=2)
         self.item_combo.bind('<KeyRelease>', self.on_item_search)
         
@@ -101,6 +105,14 @@ class SalesEntryForm:
         ttk.Button(entry_frame, text="Add Item", 
                   command=self.add_item, 
                   style='Success.TButton').grid(row=0, column=6, padx=10, pady=2)
+        
+        ttk.Button(entry_frame, text="Edit Item", 
+                  command=self.edit_selected_item,
+                  style='Warning.TButton').grid(row=0, column=7, padx=5, pady=2)
+        
+        ttk.Button(entry_frame, text="Delete Item", 
+                  command=self.delete_item,
+                  style='Danger.TButton').grid(row=0, column=8, padx=5, pady=2)
         
         columns = ('Item Code', 'Item Name', 'Quantity', 'Rate', 'Amount')
         self.items_tree = ttk.Treeview(items_frame, columns=columns, show='headings', height=10)
@@ -264,6 +276,7 @@ class SalesEntryForm:
             if items:
                 item_list = [f"{i['it_cd']} - {i['it_nm']}" for i in items]
                 self.item_combo['values'] = item_list
+                from gui.components.searchable_combobox import SearchableCombobox
                 SearchableCombobox.make_searchable(self.item_combo, item_list)
                 print(f"  Set item dropdown values: {item_list[:3]}...")
             
@@ -355,8 +368,8 @@ class SalesEntryForm:
             item_index = self.items_tree.index(selection[0])
             item_data = self.items_list[item_index]
             
-            self.item_var.set(f"{item_data['item_code']} - {item_data['item_name']}")
-            self.qty_var.set(str(item_data['quantity']))
+            self.item_var.set(f"{item_data['it_cd']} - {item_data['it_nm']}")
+            self.qty_var.set(str(item_data['qty']))
             self.rate_var.set(str(item_data['rate']))
             
             self.items_list.pop(item_index)
