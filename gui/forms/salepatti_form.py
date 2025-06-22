@@ -19,7 +19,7 @@ class SalepattiForm:
         
         self.window = tk.Toplevel(parent)
         self.window.title("SALEPATTI - Enhanced Sales Entry")
-        self.window.geometry("1200x800")
+        self.window.geometry("1400x900")
         self.window.configure(bg=settings.colors['background'])
         
         self.items_list = []
@@ -236,6 +236,10 @@ class SalepattiForm:
         ttk.Button(button_frame, text="Print Preview", 
                   command=self.print_preview,
                   style='Success.TButton').pack(side='right', padx=5)
+        
+        ttk.Button(button_frame, text="Print Document", 
+                  command=self.print_document,
+                  style='Primary.TButton').pack(side='right', padx=5)
         
         ttk.Button(button_frame, text="Clear Form", 
                   command=self.clear_form,

@@ -136,6 +136,9 @@ class PrintPurchaseBillForm:
             self.party_filter_combo['values'] = party_list
             self.party_filter_var.set('All Parties')
             
+            from gui.components.searchable_combobox import SearchableCombobox
+            SearchableCombobox.make_searchable(self.party_filter_combo, party_list)
+            
             self.load_purchase_bills()
             
         except Exception as e:
@@ -250,7 +253,7 @@ class PrintPurchaseBillForm:
             self.preview_text.config(state='normal')
             self.preview_text.delete('1.0', tk.END)
             
-            purchase_details = self.queries.get_purchase_bill_summary(bill_no)
+            purchase_details = self.queries.get_purchase_by_bill_no(bill_no)
             if not purchase_details:
                 self.preview_text.insert('1.0', f"Bill {bill_no} not found")
                 self.preview_text.config(state='disabled')
@@ -269,7 +272,11 @@ class PrintPurchaseBillForm:
     def format_purchase_bill(self, purchase_details):
         """Format purchase bill for display"""
         try:
+            if not purchase_details:
+                return "No purchase details found"
+            
             company_details = self.settings.company_details
+            first_record = purchase_details[0] if isinstance(purchase_details, list) else purchase_details
             
             bill_text = f"""
 {'='*60}
@@ -283,10 +290,11 @@ Phone: 70202 70292, 88882 12800
 
 {'='*60}
 
-Bill No: {purchase_details.get('bill_no', '')}
-Date: {purchase_details.get('bill_date', '')}
-Party: {purchase_details.get('party_nm', '')}
-Truck No: {purchase_details.get('truck_no', '')}
+Bill No: {first_record.get('bill_no', '')}
+Date: {first_record.get('bill_date', '')}
+Party: {first_record.get('party_nm', '')}
+Order No: {first_record.get('order_no', '')}
+LR No: {first_record.get('lr_no', '')}
 
 {'='*60}
 ITEMS:
@@ -296,7 +304,18 @@ Item Name                    Qty      Rate      Amount
 {'-'*60}
 """
             
-            total_amount = purchase_details.get('total_amount', 0)
+            total_amount = 0
+            if isinstance(purchase_details, list):
+                for item in purchase_details:
+                    item_name = item.get('it_nm', '')[:25]
+                    qty = item.get('qty', 0)
+                    rate = item.get('rate', 0)
+                    amount = item.get('sal_amt', 0)
+                    total_amount += amount
+                    
+                    bill_text += f"{item_name:<25} {qty:>8.2f} {rate:>10.2f} {amount:>12.2f}\n"
+            else:
+                total_amount = first_record.get('total_amount', 0)
             
             bill_text += f"""
 {'-'*60}

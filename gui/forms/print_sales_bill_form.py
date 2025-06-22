@@ -136,6 +136,9 @@ class PrintSalesBillForm:
             self.party_filter_combo['values'] = party_list
             self.party_filter_var.set('All Parties')
             
+            from gui.components.searchable_combobox import SearchableCombobox
+            SearchableCombobox.make_searchable(self.party_filter_combo, party_list)
+            
             self.load_sales_bills()
             
         except Exception as e:
@@ -250,7 +253,7 @@ class PrintSalesBillForm:
             self.preview_text.config(state='normal')
             self.preview_text.delete('1.0', tk.END)
             
-            sales_details = self.queries.get_sales_bill_summary(bill_no)
+            sales_details = self.queries.get_sales_by_bill_no(bill_no)
             if not sales_details:
                 self.preview_text.insert('1.0', f"Bill {bill_no} not found")
                 self.preview_text.config(state='disabled')
@@ -269,7 +272,11 @@ class PrintSalesBillForm:
     def format_sales_bill(self, sales_details):
         """Format sales bill for display"""
         try:
+            if not sales_details:
+                return "No sales details found"
+            
             company_details = self.settings.company_details
+            first_record = sales_details[0] if isinstance(sales_details, list) else sales_details
             
             bill_text = f"""
 {'='*60}
@@ -283,10 +290,11 @@ Phone: 70202 70292, 88882 12800
 
 {'='*60}
 
-Invoice No: {sales_details.get('bill_no', '')}
-Date: {sales_details.get('bill_date', '')}
-Customer: {sales_details.get('party_nm', '')}
-Truck No: {sales_details.get('truck_no', '')}
+Invoice No: {first_record.get('bill_no', '')}
+Date: {first_record.get('bill_date', '')}
+Customer: {first_record.get('party_nm', '')}
+Transport: {first_record.get('transport', '')}
+Vehicle: {first_record.get('vehicle', '')}
 
 {'='*60}
 ITEMS:
@@ -296,7 +304,18 @@ Item Name                    Qty      Rate      Amount
 {'-'*60}
 """
             
-            total_amount = sales_details.get('total_amount', 0)
+            total_amount = 0
+            if isinstance(sales_details, list):
+                for item in sales_details:
+                    item_name = item.get('it_nm', '')[:25]
+                    qty = item.get('qty', 0)
+                    rate = item.get('rate', 0)
+                    amount = item.get('sal_amt', 0)
+                    total_amount += amount
+                    
+                    bill_text += f"{item_name:<25} {qty:>8.2f} {rate:>10.2f} {amount:>12.2f}\n"
+            else:
+                total_amount = first_record.get('total_amount', 0)
             
             bill_text += f"""
 {'-'*60}

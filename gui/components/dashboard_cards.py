@@ -309,3 +309,8 @@ class DashboardCards:
                   text="Debit Notes", 
                   command=self.main_app.open_debit_notes_form,
                   style='Primary.TButton').pack(pady=2, fill='x')
+        
+        ttk.Button(btn_frame, 
+                  text="Trial Balance", 
+                  command=self.main_app.show_trial_balance,
+                  style='Success.TButton').pack(pady=2, fill='x')

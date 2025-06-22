@@ -17,6 +17,7 @@ class PurchaseEntryForm:
         self.queries = DatabaseQueries(db_manager)
         self.edit_mode = False
         self.original_bill_no = None
+        from business.purchase import PurchaseManager
         self.purchase_manager = PurchaseManager(db_manager)
         
         self.window = tk.Toplevel(parent)
@@ -63,7 +64,9 @@ class PurchaseEntryForm:
         
         ttk.Label(left_frame, text="Party:").grid(row=2, column=0, sticky='w', pady=2)
         self.party_var = tk.StringVar()
-        self.party_combo = ttk.Combobox(left_frame, textvariable=self.party_var, width=25)
+        from gui.components.searchable_combobox import SearchableCombobox
+        self.party_combo = SearchableCombobox.create_searchable_combobox(
+            left_frame, self.party_var, [], width=25)
         self.party_combo.grid(row=2, column=1, columnspan=2, padx=5, pady=2, sticky='ew')
         self.party_combo.bind('<KeyRelease>', self.on_party_search)
         
@@ -89,7 +92,9 @@ class PurchaseEntryForm:
         
         ttk.Label(entry_frame, text="Item:").grid(row=0, column=0, sticky='w', padx=2)
         self.item_var = tk.StringVar()
-        self.item_combo = ttk.Combobox(entry_frame, textvariable=self.item_var, width=20)
+        from gui.components.searchable_combobox import SearchableCombobox
+        self.item_combo = SearchableCombobox.create_searchable_combobox(
+            entry_frame, self.item_var, [], width=20)
         self.item_combo.grid(row=0, column=1, padx=2)
         self.item_combo.bind('<KeyRelease>', self.on_item_search)
         
@@ -195,6 +200,8 @@ class PurchaseEntryForm:
             if parties:
                 party_list = [f"{p['party_cd']} - {p['party_nm']}" for p in parties]
                 self.party_combo['values'] = party_list
+                from gui.components.searchable_combobox import SearchableCombobox
+                SearchableCombobox.make_searchable(self.party_combo, party_list)
                 print(f"  Set party dropdown values: {party_list[:3]}...")
             else:
                 print("⚠️  No parties found for dropdown")
@@ -205,6 +212,7 @@ class PurchaseEntryForm:
             if items:
                 item_list = [f"{i['it_cd']} - {i['it_nm']}" for i in items]
                 self.item_combo['values'] = item_list
+                SearchableCombobox.make_searchable(self.item_combo, item_list)
                 print(f"  Set item dropdown values: {item_list[:3]}...")
             else:
                 print("⚠️  No items found for dropdown")

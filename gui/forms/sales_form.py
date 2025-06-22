@@ -254,6 +254,8 @@ class SalesEntryForm:
             if parties:
                 party_list = [f"{p['party_cd']} - {p['party_nm']}" for p in parties]
                 self.party_combo['values'] = party_list
+                from gui.components.searchable_combobox import SearchableCombobox
+                SearchableCombobox.make_searchable(self.party_combo, party_list)
                 print(f"  Set party dropdown values: {party_list[:3]}...")
             
             items = self.queries.get_all_items()
@@ -262,6 +264,7 @@ class SalesEntryForm:
             if items:
                 item_list = [f"{i['it_cd']} - {i['it_nm']}" for i in items]
                 self.item_combo['values'] = item_list
+                SearchableCombobox.make_searchable(self.item_combo, item_list)
                 print(f"  Set item dropdown values: {item_list[:3]}...")
             
             print(f"✅ Sales form dropdowns loaded successfully")
@@ -332,7 +335,7 @@ class SalesEntryForm:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to add item: {e}")
             
-    def delete_item(self, event):
+    def delete_item(self):
         """Delete selected item"""
         selection = self.items_tree.selection()
         if selection:
@@ -340,6 +343,28 @@ class SalesEntryForm:
             self.items_tree.delete(selection[0])
             del self.items_list[item_index]
             self.update_total()
+    
+    def edit_selected_item(self):
+        """Edit the selected item in the tree"""
+        try:
+            selection = self.items_tree.selection()
+            if not selection:
+                messagebox.showwarning("Warning", "Please select an item to edit")
+                return
+            
+            item_index = self.items_tree.index(selection[0])
+            item_data = self.items_list[item_index]
+            
+            self.item_var.set(f"{item_data['item_code']} - {item_data['item_name']}")
+            self.qty_var.set(str(item_data['quantity']))
+            self.rate_var.set(str(item_data['rate']))
+            
+            self.items_list.pop(item_index)
+            self.items_tree.delete(selection[0])
+            self.update_total()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to edit item: {e}")
             
     def update_total(self):
         """Update total amount"""
@@ -379,10 +404,15 @@ class SalesEntryForm:
                 'items': self.items_list
             }
             
-            success, message = self.sales_manager.create_sales_entry(sale_data, self.items_list)
+            if self.edit_mode and self.original_bill_no:
+                success, message = self.sales_manager.update_sales_entry(self.original_bill_no, sale_data, self.items_list)
+            else:
+                success, message = self.sales_manager.create_sales_entry(sale_data, self.items_list)
+            
             if success:
-                messagebox.showinfo("Success", f"Sale {sale_data['bill_no']} saved successfully")
-                self.main_app.update_status(f"Sale {sale_data['bill_no']} saved successfully")
+                action = "updated" if self.edit_mode else "saved"
+                messagebox.showinfo("Success", f"Sale {sale_data['bill_no']} {action} successfully")
+                self.main_app.update_status(f"Sale {sale_data['bill_no']} {action} successfully")
                 self.clear_form()
                 self.load_next_bill_number()
             else:
